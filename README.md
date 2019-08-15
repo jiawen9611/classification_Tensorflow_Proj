@@ -1,4 +1,5 @@
 # Classification Project based on Tensorflow
+这是一份基于Tensorlflow的分类代码，用于deep-learning、Tensorflow的学习。
 #### 相关信息
     作者：DUT-jiawen
     开始日期：2019.6.9

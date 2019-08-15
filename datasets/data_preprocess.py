@@ -3,9 +3,12 @@ import numpy as np
 import pickle
 import cv2
 import os
+import tarfile
+import sys
 import glob
 import math
 import tensorflow as tf
+from six.moves import urllib
 
 '''
 for data reading and data augmentation
@@ -26,7 +29,7 @@ def generate_augment_train_batch(train_data, train_labels, config):
         offset = np.random.choice(50000 - train_batch_size, 1)[0]
         batch_data = train_data[offset:offset + train_batch_size, ...]
         batch_data = random_crop_and_flip(batch_data, config)
-        batch_data = whitening_image(batch_data, config)
+        # batch_data = whitening_image(batch_data, config)
         batch_label = train_labels[offset:offset + train_batch_size]
     elif config.dataset == 'captcha':
         indices = np.random.choice(len(train_labels), train_batch_size)
@@ -49,7 +52,7 @@ def horizontal_flip(image, axis):
 
 
 def random_crop_and_flip(batch_data, config):
-    padding_size = config.augmentation.padding_size
+    padding_size = config.aug_padding
     IMG_HEIGHT = config.input_size_h
     IMG_WIDTH = config.input_size_w
     IMG_DEPTH = config.input_size_d
@@ -67,11 +70,32 @@ def random_crop_and_flip(batch_data, config):
         cropped_batch[i, ...] = horizontal_flip(image=cropped_batch[i, ...], axis=1)
     return cropped_batch
 
+def maybe_download_and_extract_cifar10():
+    '''
+    Will download and extract the cifar10 data automatically
+    :return: nothing
+    '''
+    dest_directory = 'datasets/cifar10'
+    DATA_URL = 'http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+    if not os.path.exists(dest_directory):
+        os.makedirs(dest_directory)
+    filename = DATA_URL.split('/')[-1]
+    filepath = os.path.join(dest_directory, filename)
+    if not os.path.exists(filepath):
+        def _progress(count, block_size, total_size):
+            sys.stdout.write('\r>> Downloading %s %.1f%%' % (filename, float(count * block_size)
+                                                             / float(total_size) * 100.0))
+            sys.stdout.flush()
+        filepath, _ = urllib.request.urlretrieve(DATA_URL, filepath, _progress)
+        statinfo = os.stat(filepath)
+        print('Successfully downloaded', filename, statinfo.st_size, 'bytes.')
+        tarfile.open(filepath, 'r:gz').extractall(dest_directory)
 
 def read_train_data(config_dict=None):
     path_list = []
 
     if config_dict.dataset == 'cifar10':
+        maybe_download_and_extract_cifar10()
         NUM_TRAIN_BATCH = 5
         for i in range(1, NUM_TRAIN_BATCH + 1):
             path_list.append(config_dict.data_path + 'cifar-10-batches-py/data_batch_'+ str(i))

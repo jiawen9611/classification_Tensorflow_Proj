@@ -33,8 +33,14 @@ class Trainer():
         if config.architecture == 'simple_model':
             self.cls_model = models.simple_model.Model(is_training=True, num_classes=config.num_classes)
         if config.architecture == 'resnet_v1_50':
-            self.cls_model = models.resnet_v1_50.Model(is_training=True, num_classes=config.num_classes,
-                                                       dataset_config=config)
+            if config.dataset == 'cifar10':
+                self.cls_model = models.resnet_v1_50.Model(is_training=True, num_classes=config.num_classes,
+                                                           fixed_resize_side=32,
+                                                           default_image_size=32,
+                                                           dataset_config=config)
+            else:
+                self.cls_model = models.resnet_v1_50.Model(is_training=True, num_classes=config.num_classes,
+                                                           dataset_config=config)
 
     def start_train_and_val(self):
         preprocessed_inputs = self.cls_model.preprocess(self.train_image_placeholder)
@@ -44,7 +50,7 @@ class Trainer():
         loss = loss_dict['loss']
         postprocessed_dict = self.cls_model.postprocess(prediction_dict)
         classes = postprocessed_dict['classes']
-        classes= tf.cast(classes, tf.int32)
+        classes = tf.cast(classes, tf.int32)
         classes_ = tf.identity(classes, name='classes')
 
         acc = tf.reduce_mean(tf.cast(tf.equal(classes, self.train_label_placeholder), 'float'))
@@ -70,6 +76,8 @@ class Trainer():
                     train_text = 'step: {}, loss: {}, acc: {}'.format(
                         i + 1, loss_, acc_)
                     print(train_text)
+            if not os.path.exists(self.config.ckpt_path):
+                os.mkdir(self.config.ckpt_path)
             saver.save(sess, self.config.ckpt_path + 'model.ckpt')
             if self.config.save_pb_direct:
                 graph_def = tf.get_default_graph().as_graph_def()

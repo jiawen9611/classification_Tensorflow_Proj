@@ -1,0 +1,47 @@
+# -*-coding:utf-8-*-
+
+# coder: Jiawen Zhu
+# date: 2019.8.15
+# state: half modified
+
+# devices
+gpu_device: '0'
+
+# net architecture
+architecture: resnet_v1_50
+
+# datasets
+num_classes: 10
+train_data_num: 50000
+dataset: cifar10
+data_path: ./datasets/cifar10/
+input_size_w: 32
+input_size_h: 32
+input_resize_w: 32
+input_resize_h: 32
+aug_padding: 4
+# 预处理里的上下限
+_RESIZE_SIDE_MIN: 32 # MIN>=model default size
+_RESIZE_SIDE_MAX: 32
+# depth
+input_size_d: 3
+
+# training parameters
+train_steps: 50000
+batch_size: 128
+# val
+val_batch: 128
+
+# learning rate scheduler
+lr_scheduler:
+  init_lr: 0.0005
+
+# optimizer
+optimize:
+  momentum: 0.9
+
+# output
+save_pb_direct: False
+ckpt_path: ./exp_output/cifa10_resnet50/ckpt/
+pb_direct_path: ./exp_output/cifa10_resnet50/pb_saved_direct/
+

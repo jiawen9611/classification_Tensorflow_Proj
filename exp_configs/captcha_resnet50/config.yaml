@@ -1,0 +1,48 @@
+# -*-coding:utf-8-*-
+
+# coder: Jiawen Zhu
+# date: 2019.6.9
+# state: half modified
+# 失败了
+
+# devices
+gpu_device: '0'
+
+# net architecture
+architecture: resnet_v1_50
+
+# datasets
+num_classes: 10
+train_data_num: 50000
+dataset: captcha
+data_path: ./datasets/captcha_images/images/train/
+record_train_data_path: ./datasets/captcha_images/tfrecord/train.record
+input_size_w: 32
+input_size_h: 32
+input_resize_w: 32
+input_resize_h: 32
+# 预处理里的上下限
+_RESIZE_SIDE_MIN: 28
+_RESIZE_SIDE_MAX: 34
+# depth
+input_size_d: 3
+
+# training parameters
+train_steps: 1500
+batch_size: 128
+# val
+val_batch: 128
+
+# learning rate scheduler
+lr_scheduler:
+  init_lr: 0.01
+
+# optimizer
+optimize:
+  momentum: 0.9
+
+# output
+save_pb_direct: True
+ckpt_path: ./exp_output/captcha_resnet50/ckpt/
+pb_direct_path: ./exp_output/captcha_resnet50/pb_saved_direct/
+

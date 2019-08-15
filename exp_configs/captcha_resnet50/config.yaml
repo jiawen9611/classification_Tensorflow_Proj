@@ -3,7 +3,6 @@
 # coder: Jiawen Zhu
 # date: 2019.6.9
 # state: half modified
-# 失败了
 
 # devices
 gpu_device: '0'
@@ -22,27 +21,27 @@ input_size_h: 32
 input_resize_w: 32
 input_resize_h: 32
 # 预处理里的上下限
-_RESIZE_SIDE_MIN: 28
-_RESIZE_SIDE_MAX: 34
+_RESIZE_SIDE_MIN: 32
+_RESIZE_SIDE_MAX: 32
 # depth
 input_size_d: 3
 
 # training parameters
-train_steps: 1500
+train_steps: 9000
 batch_size: 128
 # val
 val_batch: 128
 
 # learning rate scheduler
 lr_scheduler:
-  init_lr: 0.01
+  init_lr: 0.003
 
 # optimizer
 optimize:
   momentum: 0.9
 
 # output
-save_pb_direct: True
+save_pb_direct: False
 ckpt_path: ./exp_output/captcha_resnet50/ckpt/
 pb_direct_path: ./exp_output/captcha_resnet50/pb_saved_direct/
 

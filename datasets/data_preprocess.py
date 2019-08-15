@@ -57,8 +57,8 @@ def random_crop_and_flip(batch_data, config):
     IMG_WIDTH = config.input_size_w
     IMG_DEPTH = config.input_size_d
 
-    pad_width = ((0, 0), (padding_size, padding_size), (padding_size, padding_size), (0, 0))
-    batch_data = np.pad(batch_data, pad_width=pad_width, mode='constant', constant_values=0)
+    # pad_width = ((0, 0), (padding_size, padding_size), (padding_size, padding_size), (0, 0))
+    # batch_data = np.pad(batch_data, pad_width=pad_width, mode='constant', constant_values=0)
 
     cropped_batch = np.zeros(len(batch_data) * IMG_HEIGHT * IMG_WIDTH * IMG_DEPTH).reshape(
         len(batch_data), IMG_HEIGHT, IMG_WIDTH, IMG_DEPTH)
@@ -100,6 +100,9 @@ def read_train_data(config_dict=None):
         for i in range(1, NUM_TRAIN_BATCH + 1):
             path_list.append(config_dict.data_path + 'cifar-10-batches-py/data_batch_'+ str(i))
         data, label = read_images(config_dict, path_list, shuffle=True, is_random_label=False)
+        pad_width = ((0, 0), (config_dict.aug_padding, config_dict.aug_padding), (config_dict.aug_padding, config_dict.aug_padding), (0, 0))
+        data = np.pad(data, pad_width=pad_width, mode='constant', constant_values=0)
+
     elif config_dict.dataset == 'captcha':
         if not os.path.exists(config_dict.data_path):
             raise ValueError('images_path is not exist.')
@@ -133,6 +136,7 @@ def read_train_data(config_dict=None):
             if count % 100 == 0:
                 print('Load {} images.'.format(count))
             image = cv2.imread(image_file)
+            image = cv2.resize(image, (config_dict.input_resize_w,config_dict.input_resize_h))
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             # Assume the name of each image is imagexxx_label.jpg
             label = int(ord(image_file.split('_')[-3].split('/')[-1])-65)
@@ -165,7 +169,7 @@ def whitening_image(image_np, config_dict):
         image_np[i,...] = (image_np[i, ...] - mean) / std
     return image_np
 
-
+# only for cifar10
 def read_images(config_dict, address_list, shuffle=True, is_random_label=False):
     data = np.array([]).reshape([0, config_dict.input_size_w*config_dict.input_size_h*config_dict.input_size_d])
     label = np.array([])

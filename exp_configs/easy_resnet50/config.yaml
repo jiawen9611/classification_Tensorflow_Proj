@@ -17,20 +17,20 @@ dataset: easy
 input_resize_w: 224
 input_resize_h: 224
 # 预处理里的上下限
-_RESIZE_SIDE_MIN: 230
-_RESIZE_SIDE_MAX: 250
+_RESIZE_SIDE_MIN: 224
+_RESIZE_SIDE_MAX: 224
 data_path: ./datasets/easy/trainval/
 record_train_data_path: ./datasets/easy/tfrecord/trainval.record
 input_size_d: 3 # depth
 
 
 # training parameters
-train_steps: 1500
+train_steps: 15000
 batch_size: 128
 
 # learning rate scheduler
 lr_scheduler:
-  init_lr: 0.01
+  init_lr: 0.005
 
 # optimizer
 optimize:

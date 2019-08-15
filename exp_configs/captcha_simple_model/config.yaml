@@ -24,7 +24,7 @@ input_resize_h: 32
 input_size_d: 3
 
 # training parameters
-train_steps: 1500
+train_steps: 2000
 batch_size: 128
 # val
 val_batch: 128
@@ -38,7 +38,7 @@ optimize:
   momentum: 0.9
 
 # output
-save_pb_direct: True
+save_pb_direct: False
 ckpt_path: ./exp_output/captcha_simple_model/ckpt/
 pb_direct_path: ./exp_output/captcha_simple_model/pb_saved_direct/
 

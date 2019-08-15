@@ -33,7 +33,7 @@ class Trainer():
         if config.architecture == 'simple_model':
             self.cls_model = models.simple_model.Model(is_training=True, num_classes=config.num_classes)
         if config.architecture == 'resnet_v1_50':
-            if config.dataset == 'cifar10':
+            if config.dataset == 'cifar10' or 'captcha':
                 self.cls_model = models.resnet_v1_50.Model(is_training=True, num_classes=config.num_classes,
                                                            fixed_resize_side=32,
                                                            default_image_size=32,
@@ -57,9 +57,10 @@ class Trainer():
         global_step = tf.Variable(0, trainable=False)
         validation_step = tf.Variable(0, trainable=False)
         # learning_rate
-        learning_rate = tf.train.exponential_decay(self.config.lr_scheduler.init_lr, global_step, 150, 0.9)
+        learning_rate = tf.train.exponential_decay(self.config.lr_scheduler.init_lr, global_step, 1500, 0.9)
         # optimizer
         optimizer = tf.train.MomentumOptimizer(learning_rate, self.config.optimize.momentum)
+        # optimizer = tf.train.AdamOptimizer(learning_rate)
         train_op = optimizer.minimize(loss, global_step)
         # val
         saver = tf.train.Saver(max_to_keep=3)
@@ -75,7 +76,8 @@ class Trainer():
                 if i % 100 == 0:
                     train_text = 'step: {}, loss: {}, acc: {}'.format(
                         i + 1, loss_, acc_)
-                    print(train_text)
+                    # print(train_text)
+                    self.logger.info(train_text)
             if not os.path.exists(self.config.ckpt_path):
                 os.mkdir(self.config.ckpt_path)
             saver.save(sess, self.config.ckpt_path + 'model.ckpt')

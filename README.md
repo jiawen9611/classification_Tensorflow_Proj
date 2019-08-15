@@ -12,16 +12,22 @@
     ResNet
 #### 数据准备
     1.captcha_images:
-    在captcha_images内新建captcha_images/images/train和val,分别用来放置训练和验证图片；
+    datasets下新建captcha_images，在captcha_images内新建captcha_images/images/train和val,
+    分别用来放置训练和验证图片；
     运行datasets下的create_classification_data.py即可生成数据集，当然要对代码做简单修改；
     2.cifar10:
     直接运行训练代码即可，可以自行下载解压；
+    3.easy:
+    https://pan.baidu.com/s/1rzKT6VvmSmoHEKdPmLMc6Q 提取码cx9a.选择第二题的分类数据集，
+    在该数据集下新建tranval和test文件夹用于存放训练与测试集；
+    
 #### 预训练模型
     1.在classification_Tensorflow_Proj内新建pretrained_models放置需要的预训练模型,
-    若找不到预训练模型，则下载下来放入指定的位置，模型保存在谷歌的models开源代码models/research/slim中；
+    若找不到预训练模型，则下载下来放入指定的位置，模型保存在谷歌的开源代码models/research/slim中；
 #### 使用方法
     实验名在exp_configs文件夹下以文件夹名体现；
-    模型输出在exp_output，在classification_Tensorflow_Proj路径下新建一个exp_output，内新建对应的实验名文件夹;
+    模型输出在exp_output，在classification_Tensorflow_Proj路径下新建一个exp_output，
+    内新建对应的实验名文件夹;
     运行方法是先在exp_configs里做好实验配置，再运行指定好的train.py文件;
 #### 实现功能
     1.使用captcha生成简单的分类数据集，标签在图片名中

@@ -12,7 +12,7 @@ from trainer.trainer import Trainer
 
 # parameters path
 parser = argparse.ArgumentParser(description='Tensorflow Classification Proj Training')
-parser.add_argument('--config-path', default='./exp_configs/easy_resnet50/', type=str)
+parser.add_argument('--config-path', default='./exp_configs/captcha_simple_model/', type=str)
 args = parser.parse_args()
 
 # read config parameters from yaml file

@@ -22,8 +22,8 @@ def generate_captcha(text='1'):
 
 
 if __name__ == '__main__':
-    output_dir = 'captcha_images/images/val/'
-    for i in range(10000):
+    output_dir = 'captcha_images/images/train/'
+    for i in range(50000):
         label = np.random.randint(0, 10)
         image = generate_captcha(str(label))
         image_name = 'image{}_{}.jpg'.format(i + 1, label)

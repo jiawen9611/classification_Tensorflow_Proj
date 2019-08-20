@@ -4,9 +4,11 @@
     开始日期：2019.6.9
 #### 环境要求
     Tensoflow1.9.0+
-    Tensorboard
-    yaml
+    TensorboardX
+    pyyaml
+    torch
     easydict
+    opencv-python
     Some other libraries (find what you miss when running the code. hhhhh~)
 #### 实现模型
     ResNet
@@ -19,7 +21,7 @@
     直接运行训练代码即可，可以自行下载解压；
     3.easy:
     https://pan.baidu.com/s/1rzKT6VvmSmoHEKdPmLMc6Q 提取码cx9a.选择第二题的分类数据集，
-    在该数据集下新建tranval和test文件夹用于存放训练与测试集；
+    在该数据集下新建trainval和test文件夹用于存放训练与测试集；
     
 #### 预训练模型
     1.在classification_Tensorflow_Proj内新建pretrained_models放置需要的预训练模型,

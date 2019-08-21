@@ -93,8 +93,8 @@ class Trainer():
                     self.logger.info(train_text)
                 # val
                 if i > 100 and i % 1000 == 0:
-                    num_batches = 10000 // self.config.val_batch
-                    order = np.random.choice(10000, num_batches * self.config.val_batch)
+                    num_batches = self.config.val_num // self.config.val_batch
+                    order = np.random.choice(self.config.val_num, num_batches * self.config.val_batch)
                     vali_data_subset = val_data[order, ...]
                     vali_labels_subset = val_labels[order]
                     loss_list = []

@@ -28,7 +28,9 @@ input_size_d: 3 # depth
 # training parameters
 train_steps: 15000
 batch_size: 32
+# val
 val_batch: 32
+val_num: 540
 
 # learning rate scheduler
 lr_scheduler:

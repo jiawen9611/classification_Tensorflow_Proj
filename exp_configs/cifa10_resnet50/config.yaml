@@ -31,6 +31,7 @@ train_steps: 300 # 80000
 batch_size: 128
 # val
 val_batch: 128
+val_num: 10000
 
 # learning rate scheduler
 lr_scheduler:

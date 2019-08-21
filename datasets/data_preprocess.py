@@ -184,7 +184,7 @@ def read_validation_data(config_dict=None):
 
         images = []
         labels = []
-        images_path = os.path.join(config_dict.data_path, '*.jpg')
+        images_path = os.path.join(config_dict.val_data_path, '*.jpg')
         count = 0
         for image_file in glob.glob(images_path):
             count += 1

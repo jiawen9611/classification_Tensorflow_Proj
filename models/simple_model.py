@@ -67,6 +67,7 @@ class Model(object):
             prediction_dict: A dictionary holding prediction tensors to be
                 passed to the Loss or Postprocess functions.
         """
+        # todo: is_training is not all?
         with slim.arg_scope([slim.conv2d, slim.fully_connected],
                             activation_fn=tf.nn.relu):
             net = preprocessed_inputs

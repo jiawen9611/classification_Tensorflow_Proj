@@ -13,34 +13,31 @@
 #### 实现模型
     ResNet
 #### 数据准备
-    1.captcha_images:
+    1.cifar10:
+    训练的时候直接运行训练代码即可，可以自行下载解压；
+    2.captcha_images:
     datasets下新建captcha_images，在captcha_images内新建captcha_images/images/train和val,
     分别用来放置训练和验证图片；
-    运行datasets下的create_classification_data.py即可生成数据集，当然要对代码做简单修改；
-    2.cifar10:
-    直接运行训练代码即可，可以自行下载解压；
+    运行datasets下的create_classification_data.py即可生成这个小型数据集；
     3.easy:
-    https://pan.baidu.com/s/1rzKT6VvmSmoHEKdPmLMc6Q 提取码cx9a.选择第二题的分类数据集，
-    在该数据集下新建trainval和test文件夹用于存放训练与测试集；
-    
+    链接: https://pan.baidu.com/s/11Oyo2ESoShI-rLV8xTH-Eg 提取码: js65 
+    该数据集下载解压后放在datasets文件夹下即可；
 #### 预训练模型
     1.在classification_Tensorflow_Proj内新建pretrained_models放置需要的预训练模型,
     若找不到预训练模型，则下载下来放入指定的位置，模型保存在谷歌的开源代码models/research/slim中；
 #### 使用方法
-    实验名在exp_configs文件夹下以文件夹名体现；
-    模型输出在exp_output，在classification_Tensorflow_Proj路径下新建一个exp_output，
-    内新建对应的实验名文件夹;
-    运行方法是先在exp_configs里做好实验配置，再运行指定好的train.py文件;
+    1.实验名在exp_configs文件夹下以文件夹名体现,格式：数据集_网络模型；
+    2.模型输出在exp_output，需要在classification_Tensorflow_Proj路径下新建一个exp_output，
+    3.exp_output内新建对应的实验名文件夹，格式与exp_configs内保持一致;
+    4.运行方法是先在exp_configs里做好实验配置(可以使用默认配置)，再在train.py中修改--config-path
+    为你想做实验的文件夹名，再运行train.py即可;
 #### 实现功能
-    1.使用captcha生成简单的分类数据集，标签在图片名中
-    2.训练模型，生成ckpt
-    3.使用ckpt对单张图片进行测试
-    4.训练结束直接保存为pb模型
-    5.可以使用训练时直接保存的pb模型对单张图片进行测试
-    6.把ckpt转化为pb模型,并对该pb做测试
-    7.添加resnet系列模型，可以使用预训练模型
-    8.record数据集的制作与读取
+    1.使用captcha生成简单的分类数据集，标签在图片名中；
+    2.训练模型，生成ckpt，使用ckpt对单张图片进行测试；
+    3.模型训练的同时对测试集进行测试；
+    4.模型训练的参数打印出来，同时保存在exp_output/“你的实验”/log.txt
+    方便之后的对比查看；
 #### 有待完成
-    模型训练的同时进行验证；
-#### 相关说明
-    1.这份代码的数据预处理过程是放在网络结构中的，和pt的版本有所不同
+    tensorboard记录可视化训练参数；
+    将BN层的μ和σ参数也保存下来；
+

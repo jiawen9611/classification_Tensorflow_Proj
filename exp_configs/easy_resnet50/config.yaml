@@ -20,13 +20,15 @@ input_resize_h: 224
 _RESIZE_SIDE_MIN: 224
 _RESIZE_SIDE_MAX: 224
 data_path: ./datasets/easy/trainval/
+val_data_path: ./datasets/easy/test_with_label/
 record_train_data_path: ./datasets/easy/tfrecord/trainval.record
 input_size_d: 3 # depth
 
 
 # training parameters
 train_steps: 15000
-batch_size: 128
+batch_size: 32
+val_batch: 32
 
 # learning rate scheduler
 lr_scheduler:

@@ -16,7 +16,7 @@ class Model(object):
     def __init__(self, num_classes, is_training,
                  fixed_resize_side=224,
                  default_image_size=224,
-                 dataset_config=None):
+                 dataset_config=None, if_reuse=None):
         """Constructor.
 
         Args:
@@ -29,6 +29,9 @@ class Model(object):
         self._fixed_resize_side = fixed_resize_side
         self._default_image_size = default_image_size
         self._dataset_config = dataset_config
+        self.if_reuse = if_reuse
+
+
 
     @property
     def num_classes(self):
@@ -71,10 +74,14 @@ class Model(object):
             prediction_dict: A dictionary holding prediction tensors to be
                 passed to the Loss or Postprocess functions.
         """
+
+        # 每次predict是否都会重新 arg_scope？ 之前slim.train不会
+        # 验证失败也不是这个顺序问题
         with slim.arg_scope(nets.resnet_v1.resnet_arg_scope()):
             net, endpoints = nets.resnet_v1.resnet_v1_50(
                 preprocessed_inputs, num_classes=None,
                 is_training=self._is_training)
+
         net = tf.squeeze(net, axis=[1, 2])
         logits = slim.fully_connected(net, num_outputs=self.num_classes,
                                       activation_fn=None, scope='Predict')
@@ -117,7 +124,8 @@ class Model(object):
             labels=groundtruth_lists,
             scope='Loss')
         loss = slim.losses.get_total_loss()
-        loss_dict = {'loss': loss}
+        cross_entropy_mean = tf.reduce_mean(loss, name='cross_entropy')
+        loss_dict = {'loss': cross_entropy_mean}
         return loss_dict
 
     def accuracy(self, postprocessed_dict, groundtruth_lists):

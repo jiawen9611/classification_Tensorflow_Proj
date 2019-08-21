@@ -30,4 +30,13 @@ if __name__ == '__main__':
         output_path = output_dir + image_name
         cv2.imwrite(output_path, image)
         if i % 100 == 0:
-            print("create {} images".format(i))
+            print("create {} train images".format(i))
+    output_dir = 'captcha_images/images/val/'
+    for i in range(10000):
+        label = np.random.randint(0, 10)
+        image = generate_captcha(str(label))
+        image_name = 'image{}_{}.jpg'.format(i + 1, label)
+        output_path = output_dir + image_name
+        cv2.imwrite(output_path, image)
+        if i % 100 == 0:
+            print("create {} val images".format(i))

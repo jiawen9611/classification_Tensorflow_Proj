@@ -15,6 +15,7 @@ num_classes: 10
 train_data_num: 50000
 dataset: captcha
 data_path: ./datasets/captcha_images/images/train/
+val_data_path: ./datasets/captcha_images/images/val/
 record_train_data_path: ./datasets/captcha_images/tfrecord/train.record
 input_size_w: 32
 input_size_h: 32

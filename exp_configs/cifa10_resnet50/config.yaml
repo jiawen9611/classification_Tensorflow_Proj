@@ -27,14 +27,14 @@ _RESIZE_SIDE_MAX: 32
 input_size_d: 3
 
 # training parameters
-train_steps: 10000
+train_steps: 300 # 80000
 batch_size: 128
 # val
 val_batch: 128
 
 # learning rate scheduler
 lr_scheduler:
-  init_lr: 0.05
+  init_lr: 0.01
 
 # optimizer
 optimize:

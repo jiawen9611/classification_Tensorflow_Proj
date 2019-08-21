@@ -15,6 +15,7 @@ for data reading and data augmentation
 '''
 
 
+# only for cifar10
 def generate_vali_batch(vali_data, vali_label, vali_batch_size):
     offset = np.random.choice(10000 - vali_batch_size, 1)[0]
     vali_data_batch = vali_data[offset:offset + vali_batch_size, ...]
@@ -55,9 +56,6 @@ def random_crop_and_flip(batch_data, config):
     IMG_HEIGHT = config.input_size_h
     IMG_WIDTH = config.input_size_w
     IMG_DEPTH = config.input_size_d
-
-    # pad_width = ((0, 0), (padding_size, padding_size), (padding_size, padding_size), (0, 0))
-    # batch_data = np.pad(batch_data, pad_width=pad_width, mode='constant', constant_values=0)
 
     cropped_batch = np.zeros(len(batch_data) * IMG_HEIGHT * IMG_WIDTH * IMG_DEPTH).reshape(
         len(batch_data), IMG_HEIGHT, IMG_WIDTH, IMG_DEPTH)
@@ -102,9 +100,11 @@ def read_train_data(config_dict=None):
         for i in range(1, NUM_TRAIN_BATCH + 1):
             path_list.append(config_dict.data_path + 'cifar-10-batches-py/data_batch_' + str(i))
         data, label = read_images(config_dict, path_list, shuffle=True, is_random_label=False)
+        # preprocess: padding
         pad_width = (
-        (0, 0), (config_dict.aug_padding, config_dict.aug_padding), (config_dict.aug_padding, config_dict.aug_padding),
-        (0, 0))
+            (0, 0), (config_dict.aug_padding, config_dict.aug_padding),
+            (config_dict.aug_padding, config_dict.aug_padding),
+            (0, 0))
         data = np.pad(data, pad_width=pad_width, mode='constant', constant_values=0)
 
     elif config_dict.dataset == 'captcha':
@@ -154,11 +154,52 @@ def read_train_data(config_dict=None):
 
 def read_validation_data(config_dict=None):
     path_list = []
-
     if config_dict.dataset == 'cifar10':
         path_list.append(config_dict.data_path + 'cifar-10-batches-py/test_batch')
-        validation_array, validation_labels = read_images(config_dict, path_list, is_random_label=False)
-        validation_array = whitening_image(validation_array, config_dict)
+        validation_array, validation_labels = read_images(config_dict, path_list, shuffle=False, is_random_label=False)
+        # validation_array = whitening_image(validation_array, config_dict)
+    elif config_dict.dataset == 'captcha':
+        if not os.path.exists(config_dict.val_data_path):
+            raise ValueError('images_path is not exist.')
+
+        images = []
+        labels = []
+        images_path = os.path.join(config_dict.data_path, '*.jpg')
+        count = 0
+        for image_file in glob.glob(images_path):
+            count += 1
+            if count % 1000 == 0:
+                print('Load {} images.'.format(count))
+            image = cv2.imread(image_file)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # Assume the name of each image is imagexxx_label.jpg
+            label = int(image_file.split('_')[-1].split('.')[0])
+            images.append(image)
+            labels.append(label)
+        validation_array = np.array(images)
+        validation_labels = np.array(labels)
+    elif config_dict.dataset == 'easy':
+        if not os.path.exists(config_dict.val_data_path):
+            raise ValueError('images_path is not exist.')
+
+        images = []
+        labels = []
+        images_path = os.path.join(config_dict.data_path, '*.jpg')
+        count = 0
+        for image_file in glob.glob(images_path):
+            count += 1
+            if count % 100 == 0:
+                print('Load {} images.'.format(count))
+            image = cv2.imread(image_file)
+            image = cv2.resize(image, (config_dict.input_resize_w, config_dict.input_resize_h))
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # Assume the name of each image is imagexxx_label.jpg
+            label = int(ord(image_file.split('_')[-2].split('/')[-1]) - 65)
+            images.append(image)
+            labels.append(label)
+        validation_array = np.array(images)
+        validation_labels = np.array(labels)
+
     return validation_array, validation_labels
 
 
@@ -190,6 +231,7 @@ def read_images(config_dict, address_list, shuffle=True, is_random_label=False):
     IMG_DEPTH = config_dict.input_size_d
     data = data.reshape((num_data, IMG_HEIGHT * IMG_WIDTH, IMG_DEPTH), order='F')
     data = data.reshape((num_data, IMG_HEIGHT, IMG_WIDTH, IMG_DEPTH))
+
     if shuffle is True:
         print('Shuffling')
         order = np.random.permutation(num_data)
@@ -205,6 +247,7 @@ def _read_one_batch_cifar10(path, is_random_label):
     dicts = pickle.load(fo, encoding='iso-8859-1')
     fo.close()
     data = dicts['data']
+    # for test, should not use!
     if is_random_label is False:
         label = np.array(dicts['labels'])
     else:

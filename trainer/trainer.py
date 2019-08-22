@@ -6,13 +6,13 @@
 
 
 # import torch.backends.cudnn as cudnn
-# import time
+import time
 import models
 # from models import *
 from running_logger.create_logger import *
 from datasets.data_preprocess import *
 # from datasets.record_dataset import *
-# from tensorboardX import SummaryWriter
+from tensorboardX import SummaryWriter
 from tensorflow.python.framework import graph_util
 
 
@@ -22,6 +22,8 @@ class Trainer():
         self.config = config
         self.logger = Logger(log_file_name=output_path + '/log.txt',
                              log_level=logging.DEBUG, logger_name="").get_log()
+        # start a SummaryWriter
+        self.writer = SummaryWriter(log_dir=self.output_path + '/event')
         self.image_placeholder = tf.placeholder(dtype=tf.float32, shape=[None, config.input_resize_h,
                                                                          config.input_resize_w,
                                                                          config.input_size_d], name='inputs')
@@ -73,6 +75,7 @@ class Trainer():
         # todo:区别
         # init = tf.global_variables_initializer()
         # init = tf.initialize_all_variables()
+        # self.writer.add_graph(self.cls_model, (self.image_placeholder,))
         with tf.Session() as sess:
             # sess.run(init)
             sess.run(tf.global_variables_initializer())
@@ -86,10 +89,14 @@ class Trainer():
                 train_dict = {self.image_placeholder: batch_images, self.label_placeholder: batch_labels,
                               self.is_training: True}
                 _, loss_, acc_, lr_ = sess.run([train_op, loss, acc, learning_rate], feed_dict=train_dict)
+                self.writer.add_scalar('learning_rate', lr_, i)
+                self.writer.add_scalar('train_loss', loss_, i)
+                self.writer.add_scalar('train_acc', acc_, i)
                 if i % 100 == 0:
                     train_text = 'step: {}, lr: {:.5f}, loss: {:.5f}, acc: {}'.format(
                         i + 1, lr_, loss_, acc_)
                     # print(train_text)
+
                     self.logger.info(train_text)
                 # val
                 if i > 100 and i % 1000 == 0:
@@ -100,6 +107,7 @@ class Trainer():
                     loss_list = []
                     acc_list = []
                     self.logger.info('×*×*×*×*×*×*×*×*×*×*×*Start test×*×*×*×*×*×*×*×*×*×*×*')
+                    start_time = time.time()
                     for step in range(num_batches):
                         offset = step * self.config.val_batch
                         val_feed_dict = {self.image_placeholder: vali_data_subset[
@@ -111,8 +119,11 @@ class Trainer():
                         val_loss, val_acc = sess.run([loss, acc], feed_dict=val_feed_dict)
                         loss_list.append(val_loss)
                         acc_list.append(val_acc)
-
-                    val_text = 'val_loss: {:.5f}, val_acc: {}'.format(np.mean(loss_list), np.mean(acc_list))
+                    time_count = time.time() - start_time
+                    examples_per_sec = self.config.val_num / time_count
+                    self.writer.add_scalar('test_loss', np.mean(loss_list), i)
+                    self.writer.add_scalar('test_acc', np.mean(acc_list), i)
+                    val_text = 'val_loss: {:.5f}, speed:{:.2f}iters/s, val_acc: {:.3}'.format(np.mean(loss_list), examples_per_sec, np.mean(acc_list))
                     self.logger.info(val_text)
             if not os.path.exists(self.config.ckpt_path):
                 os.mkdir(self.config.ckpt_path)

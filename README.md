@@ -32,10 +32,10 @@
     4.运行方法是先在exp_configs里做好实验配置(可以使用默认配置)，再在train.py中修改--config-path
     为你想做实验的文件夹名，再运行train.py即可;
     5.tensorboard查看相关实验参数指标，在exp_output/你的实验/event/路径下，于终端输入：
-        tensorboard --logdir=./
+        tensorboard --logdir=./  
       效果示例：
-   <figure class="half"><img src="assets/loss.png"><img src="assets/acc.png"</figure>
-      
+   <p align="center"><img src="assets/loss.png"><img src="assets/acc.png"></p>
+        
 #### 实现功能
     1.使用captcha生成简单的分类数据集，标签在图片名中；
     2.训练模型，生成ckpt，使用ckpt对单张图片进行测试；

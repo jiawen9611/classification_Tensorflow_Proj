@@ -4,7 +4,6 @@
     开始日期：2019.6.9
 #### 环境要求
     Tensoflow1.9.0+
-    TensorboardX
     pyyaml
     torch
     easydict

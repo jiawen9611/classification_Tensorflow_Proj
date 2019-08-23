@@ -12,7 +12,6 @@ import models
 from running_logger.create_logger import *
 from datasets.data_preprocess import *
 # from datasets.record_dataset import *
-# from tensorboardX import SummaryWriter
 from tensorflow.python.framework import graph_util
 
 
@@ -24,7 +23,6 @@ class Trainer():
                              log_level=logging.DEBUG, logger_name="").get_log()
         # start a SummaryWriter
         self.writer = tf.summary.FileWriter(self.output_path + '/event', flush_secs=60)
-        # self.writer = SummaryWriter(log_dir=self.output_path + '/event')
         self.image_placeholder = tf.placeholder(dtype=tf.float32, shape=[None, config.input_resize_h,
                                                                          config.input_resize_w,
                                                                          config.input_size_d], name='inputs')
@@ -78,10 +76,11 @@ class Trainer():
         train_data, train_labels = read_train_data(self.config)
         val_data, val_labels = read_validation_data(self.config)
 
+
+
         # todo:区别
         # init = tf.global_variables_initializer()
         # init = tf.initialize_all_variables()
-        # self.writer.add_graph(self.cls_model, (self.image_placeholder,))
         with tf.Session() as sess:
             # sess.run(init)
             sess.run(tf.global_variables_initializer())
@@ -93,9 +92,9 @@ class Trainer():
             for i in range(self.config.train_steps):
                 # train
                 batch_images, batch_labels = generate_augment_train_batch(train_data, train_labels, self.config)
+
                 train_dict = {self.image_placeholder: batch_images, self.label_placeholder: batch_labels,
                               self.is_training: True}
-                # train_summary = [train_loss_scalar, trian_accuracy_scalar, lr_scalar]
                 _, loss_, acc_, lr_, train_loss_scalar_, trian_accuracy_scalar_, lr_scalar_ = sess.run(
                     [train_op, loss, acc, learning_rate, train_loss_scalar, trian_accuracy_scalar, lr_scalar],
                     feed_dict=train_dict)
@@ -103,24 +102,29 @@ class Trainer():
                 self.writer.add_summary(train_loss_scalar_, global_step=i)
                 self.writer.add_summary(trian_accuracy_scalar_, global_step=i)
                 self.writer.add_summary(lr_scalar_, global_step=i)
-                # self.writer.add_scalar('learning_rate', lr_, i)
-                # self.writer.add_scalar('train_loss', loss_, i)
-                # self.writer.add_scalar('train_acc', acc_, i)
                 if i % 100 == 0:
                     train_text = 'step: {}, lr: {:.5f}, loss: {:.5f}, acc: {}'.format(
                         i + 1, lr_, loss_, acc_)
                     # print(train_text)
                     self.logger.info(train_text)
                 # val
-                if i > 100 and i % 1000 == 0:
+                if i > 100 and i % 100 == 0:
+                    # for tb show | pic is tensor |img in train
+                    image_shaped_input = tf.reshape(batch_images,
+                                                    [-1, self.config.input_resize_w, self.config.input_resize_h,
+                                                     self.config.input_size_d])
+                    # 3 pics
+                    image_summary = tf.summary.image('image', image_shaped_input, 3)
+                    image_summary_ = sess.run(image_summary)
+                    self.writer.add_summary(image_summary_)
+
+                    # image = tf.expand_dims(image_shaped_input, 0)
                     num_batches = self.config.val_num // self.config.val_batch
                     order = np.random.choice(self.config.val_num, num_batches * self.config.val_batch)
                     vali_data_subset = val_data[order, ...]
                     vali_labels_subset = val_labels[order]
                     loss_list = []
                     acc_list = []
-                    summary_loss_list = []
-                    summary_acc_list = []
                     self.logger.info('×*×*×*×*×*×*×*×*×*×*×*Start test×*×*×*×*×*×*×*×*×*×*×*')
                     start_time = time.time()
                     for step in range(num_batches):
@@ -138,8 +142,6 @@ class Trainer():
                         acc_list.append(val_acc)
                     time_count = time.time() - start_time
                     examples_per_sec = self.config.val_num / time_count
-                    # self.writer.add_scalar('test_loss', np.mean(loss_list), i)
-                    # self.writer.add_scalar('test_acc', np.mean(acc_list), i)
                     val_text = 'val_loss: {:.5f}, speed:{:.2f}iters/s, val_acc: {:.3}'.format(np.mean(loss_list),
                                                                                               examples_per_sec,
                                                                                               np.mean(acc_list))

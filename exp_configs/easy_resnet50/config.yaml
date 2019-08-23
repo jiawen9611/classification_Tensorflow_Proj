@@ -24,9 +24,12 @@ val_data_path: ./datasets/easy/test_with_label/
 record_train_data_path: ./datasets/easy/tfrecord/trainval.record
 input_size_d: 3 # depth
 
+# resume
+if_resume: True
+ckpt_resume_path: ./exp_output/easy_resnet50/ckpt/model.ckpt
 
 # training parameters
-train_steps: 15000
+train_steps: 1100
 batch_size: 32
 # val
 val_batch: 32

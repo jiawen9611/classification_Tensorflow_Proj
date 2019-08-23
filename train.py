@@ -19,7 +19,7 @@ args = parser.parse_args()
 config_path = args.config_path
 output_path = config_path.replace("exp_configs", "exp_output")
 with open(config_path + '/config.yaml') as f:
-    config = yaml.load(f)
+    config = yaml.load(f, Loader=yaml.FullLoader)
 # convert to dict
 config = EasyDict(config)
 

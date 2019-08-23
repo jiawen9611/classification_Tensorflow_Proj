@@ -54,6 +54,7 @@ class Trainer():
         postprocessed_dict = self.cls_model.postprocess(prediction_dict)
         classes = postprocessed_dict['classes']
         classes = tf.cast(classes, tf.int32)
+        tf.identity(classes, name='classes')
         acc = tf.reduce_mean(tf.cast(tf.equal(classes, self.label_placeholder), 'float'))
         global_step = tf.Variable(0, trainable=False)
         # learning_rate
@@ -83,8 +84,12 @@ class Trainer():
         # init = tf.initialize_all_variables()
         with tf.Session() as sess:
             # sess.run(init)
-            sess.run(tf.global_variables_initializer())
-            sess.run(tf.local_variables_initializer())
+            if self.config.if_resume:
+                saver.restore(sess, self.config.ckpt_resume_path)
+                print('Restored from checkpoint...')
+            else:
+                sess.run(tf.global_variables_initializer())
+                sess.run(tf.local_variables_initializer())
             # todo
             # coord = tf.train.Coordinator()
             # threads = tf.train.start_queue_runners(sess=sess, coord=coord)
@@ -103,12 +108,12 @@ class Trainer():
                 self.writer.add_summary(trian_accuracy_scalar_, global_step=i)
                 self.writer.add_summary(lr_scalar_, global_step=i)
                 if i % 100 == 0:
-                    train_text = 'step: {}, lr: {:.5f}, loss: {:.5f}, acc: {}'.format(
+                    train_text = 'step: {}, lr: {:.5f}, loss: {:.5f}, acc: {:.3f}'.format(
                         i + 1, lr_, loss_, acc_)
                     # print(train_text)
                     self.logger.info(train_text)
                 # val
-                if i > 100 and i % 100 == 0:
+                if i > 100 and i % 1000 == 0:
                     # for tb show | pic is tensor |img in train
                     image_shaped_input = tf.reshape(batch_images,
                                                     [-1, self.config.input_resize_w, self.config.input_resize_h,
@@ -159,5 +164,6 @@ class Trainer():
                 with tf.gfile.GFile(self.config.pb_direct_path + 'model.pb', 'wb') as fid:
                     serialized_graph = output_graph_def.SerializeToString()
                     fid.write(serialized_graph)
+            print("Trianing Finished!")
             # coord.request_stop()
             # coord.join(threads)

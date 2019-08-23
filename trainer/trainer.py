@@ -12,7 +12,7 @@ import models
 from running_logger.create_logger import *
 from datasets.data_preprocess import *
 # from datasets.record_dataset import *
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 from tensorflow.python.framework import graph_util
 
 
@@ -23,7 +23,8 @@ class Trainer():
         self.logger = Logger(log_file_name=output_path + '/log.txt',
                              log_level=logging.DEBUG, logger_name="").get_log()
         # start a SummaryWriter
-        self.writer = SummaryWriter(log_dir=self.output_path + '/event')
+        self.writer = tf.summary.FileWriter(self.output_path + '/event', flush_secs=60)
+        # self.writer = SummaryWriter(log_dir=self.output_path + '/event')
         self.image_placeholder = tf.placeholder(dtype=tf.float32, shape=[None, config.input_resize_h,
                                                                          config.input_resize_w,
                                                                          config.input_size_d], name='inputs')
@@ -68,6 +69,11 @@ class Trainer():
         # 如有BN，算子切勿使用次方式更新
         # train_op = optimizer.minimize(loss, global_step=global_step)
 
+        # summary
+        train_loss_scalar = tf.summary.scalar('train_loss', loss)
+        trian_accuracy_scalar = tf.summary.scalar('trian_accuracy', acc)
+        lr_scalar = tf.summary.scalar('lr', learning_rate)
+
         saver = tf.train.Saver(max_to_keep=3)
         train_data, train_labels = read_train_data(self.config)
         val_data, val_labels = read_validation_data(self.config)
@@ -83,20 +89,27 @@ class Trainer():
             # todo
             # coord = tf.train.Coordinator()
             # threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+            self.writer.add_graph(sess.graph)
             for i in range(self.config.train_steps):
                 # train
                 batch_images, batch_labels = generate_augment_train_batch(train_data, train_labels, self.config)
                 train_dict = {self.image_placeholder: batch_images, self.label_placeholder: batch_labels,
                               self.is_training: True}
-                _, loss_, acc_, lr_ = sess.run([train_op, loss, acc, learning_rate], feed_dict=train_dict)
-                self.writer.add_scalar('learning_rate', lr_, i)
-                self.writer.add_scalar('train_loss', loss_, i)
-                self.writer.add_scalar('train_acc', acc_, i)
+                # train_summary = [train_loss_scalar, trian_accuracy_scalar, lr_scalar]
+                _, loss_, acc_, lr_, train_loss_scalar_, trian_accuracy_scalar_, lr_scalar_ = sess.run(
+                    [train_op, loss, acc, learning_rate, train_loss_scalar, trian_accuracy_scalar, lr_scalar],
+                    feed_dict=train_dict)
+
+                self.writer.add_summary(train_loss_scalar_, global_step=i)
+                self.writer.add_summary(trian_accuracy_scalar_, global_step=i)
+                self.writer.add_summary(lr_scalar_, global_step=i)
+                # self.writer.add_scalar('learning_rate', lr_, i)
+                # self.writer.add_scalar('train_loss', loss_, i)
+                # self.writer.add_scalar('train_acc', acc_, i)
                 if i % 100 == 0:
                     train_text = 'step: {}, lr: {:.5f}, loss: {:.5f}, acc: {}'.format(
                         i + 1, lr_, loss_, acc_)
                     # print(train_text)
-
                     self.logger.info(train_text)
                 # val
                 if i > 100 and i % 1000 == 0:
@@ -106,6 +119,8 @@ class Trainer():
                     vali_labels_subset = val_labels[order]
                     loss_list = []
                     acc_list = []
+                    summary_loss_list = []
+                    summary_acc_list = []
                     self.logger.info('×*×*×*×*×*×*×*×*×*×*×*Start test×*×*×*×*×*×*×*×*×*×*×*')
                     start_time = time.time()
                     for step in range(num_batches):
@@ -116,14 +131,18 @@ class Trainer():
                                                                  offset:offset + self.config.val_batch],
                                          self.is_training: False
                                          }
-                        val_loss, val_acc = sess.run([loss, acc], feed_dict=val_feed_dict)
+                        # test_summary: test_loss_scalar, test_accuracy_scalar
+                        val_loss, val_acc = sess.run(
+                            [loss, acc], feed_dict=val_feed_dict)
                         loss_list.append(val_loss)
                         acc_list.append(val_acc)
                     time_count = time.time() - start_time
                     examples_per_sec = self.config.val_num / time_count
-                    self.writer.add_scalar('test_loss', np.mean(loss_list), i)
-                    self.writer.add_scalar('test_acc', np.mean(acc_list), i)
-                    val_text = 'val_loss: {:.5f}, speed:{:.2f}iters/s, val_acc: {:.3}'.format(np.mean(loss_list), examples_per_sec, np.mean(acc_list))
+                    # self.writer.add_scalar('test_loss', np.mean(loss_list), i)
+                    # self.writer.add_scalar('test_acc', np.mean(acc_list), i)
+                    val_text = 'val_loss: {:.5f}, speed:{:.2f}iters/s, val_acc: {:.3}'.format(np.mean(loss_list),
+                                                                                              examples_per_sec,
+                                                                                              np.mean(acc_list))
                     self.logger.info(val_text)
             if not os.path.exists(self.config.ckpt_path):
                 os.mkdir(self.config.ckpt_path)

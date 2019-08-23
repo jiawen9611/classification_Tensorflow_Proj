@@ -35,6 +35,8 @@
         tensorboard --logdir=./  
       效果示例：
    <p align="center"><img src="assets/loss.png"><img src="assets/acc.png"></p>
+   <p align="center"><img src="assets/graph.png"></p>
+
         
 #### 实现功能
     1.使用captcha生成简单的分类数据集，标签在图片名中；
@@ -42,6 +44,7 @@
     3.模型训练的同时对测试集进行测试；
     4.模型训练的参数打印出来，同时保存在exp_output/“你的实验”/log.txt
     方便之后的对比查看；
+    5.计算模型测试的速度；
 #### 有待完成
     tensorboard记录可视化训练参数；
     将BN层的μ和σ参数也保存下来；

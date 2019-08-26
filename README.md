@@ -30,7 +30,7 @@
     3.exp_output内新建对应的实验名文件夹，格式与exp_configs内保持一致;
     4.运行方法是先在exp_configs里做好实验配置(可以使用默认配置)，再在train.py中修改--config-path
     为你想做实验的文件夹名，再运行train.py即可;
-    5.tensorboard查看相关实验参数指标，在exp_output/你的实验/event/路径下，于终端输入：
+    5.tensorboard查看相关实验参数指标以及训练计算图，在exp_output/你的实验/event/路径下，于终端输入：
         tensorboard --logdir=./  
       效果示例：
    <p align="center"><img src="assets/loss.png"><img src="assets/acc.png"></p>

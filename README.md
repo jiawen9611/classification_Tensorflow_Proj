@@ -47,5 +47,6 @@
     6.读取cktp继续训练
     7.tensorboard显示图片
     8.使用保存好的模型进行前向推断测试
+    9.使用imagenet上的预训练模型[res50-easy]
 
 

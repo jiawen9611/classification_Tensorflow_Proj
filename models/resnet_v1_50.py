@@ -82,9 +82,15 @@ class Model(object):
                 preprocessed_inputs, num_classes=None,
                 is_training=self._is_training)
 
-        net = tf.squeeze(net, axis=[1, 2])
-        logits = slim.fully_connected(net, num_outputs=self.num_classes,
-                                      activation_fn=None, scope='Predict')
+        # net = tf.squeeze(net, axis=[1, 2])
+        # logits = slim.fully_connected(net, num_outputs=self.num_classes,
+        #                               activation_fn=None, scope='Predict')
+        with tf.variable_scope('Logits'):
+            net = tf.squeeze(net, axis=[1, 2])
+            net = slim.dropout(net, keep_prob=0.5, scope='scope')
+            logits = slim.fully_connected(net, num_outputs=self.num_classes,
+                                          activation_fn=None, scope='fc')
+
         prediction_dict = {'logits': logits}
         return prediction_dict
 

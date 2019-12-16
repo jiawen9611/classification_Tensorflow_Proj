@@ -13,6 +13,7 @@ from running_logger.create_logger import *
 from datasets.data_preprocess import *
 # from datasets.record_dataset import *
 from tensorflow.python.framework import graph_util
+slim = tf.contrib.slim
 
 
 class Trainer():
@@ -74,6 +75,21 @@ class Trainer():
         lr_scalar = tf.summary.scalar('lr', learning_rate)
 
         saver = tf.train.Saver(max_to_keep=3)
+        # 读取预训练模型用
+        checkpoint_exclude_scopes = 'Logits'
+        exclusions = None
+        if checkpoint_exclude_scopes:
+            exclusions = [
+                scope.strip() for scope in checkpoint_exclude_scopes.split(',')]
+        variables_to_restore = []
+        for var in slim.get_model_variables():
+            excluded = False
+            for exclusion in exclusions:
+                if var.op.name.startswith(exclusion):
+                    excluded = True
+            if not excluded:
+                variables_to_restore.append(var)
+        saver_restore = tf.train.Saver(var_list=variables_to_restore)
         train_data, train_labels = read_train_data(self.config)
         val_data, val_labels = read_validation_data(self.config)
 
@@ -83,6 +99,9 @@ class Trainer():
         # init = tf.global_variables_initializer()
         # init = tf.initialize_all_variables()
         with tf.Session() as sess:
+            # 读预训练模型用
+            saver_restore.restore(sess, self.config.ckpt_pretrain_path)
+
             # sess.run(init)
             if self.config.if_resume:
                 saver.restore(sess, self.config.ckpt_resume_path)
@@ -114,6 +133,10 @@ class Trainer():
                     self.logger.info(train_text)
                 # val
                 if i > 100 and i % 1000 == 0:
+                    if not os.path.exists(self.config.ckpt_path):
+                        os.mkdir(self.config.ckpt_path)
+                    saver.save(sess, self.config.ckpt_path + str(i) + 'model.ckpt')
+
                     # for tb show | pic is tensor |img in train
                     image_shaped_input = tf.reshape(batch_images,
                                                     [-1, self.config.input_resize_w, self.config.input_resize_h,
@@ -151,9 +174,9 @@ class Trainer():
                                                                                               examples_per_sec,
                                                                                               np.mean(acc_list))
                     self.logger.info(val_text)
-            if not os.path.exists(self.config.ckpt_path):
-                os.mkdir(self.config.ckpt_path)
-            saver.save(sess, self.config.ckpt_path + 'model.ckpt')
+            # if not os.path.exists(self.config.ckpt_path):
+            #     os.mkdir(self.config.ckpt_path)
+            # saver.save(sess, self.config.ckpt_path + 'model.ckpt')
             if self.config.save_pb_direct:
                 graph_def = tf.get_default_graph().as_graph_def()
                 output_graph_def = graph_util.convert_variables_to_constants(
